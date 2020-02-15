@@ -117,6 +117,7 @@ class MJGame():
         feats["kyotaku"] = self.n_kyoutaku_riichi
         feats["dora"] = self.dora_list
         feats["parent"] = self.parent
+        feats["riichi_player"] = self.riichi_player
         # あがり牌
         agari_hai_list = self._get_agari_hai(self.tehai_dict[self.riichi_player])
         feats["agari_hai"] = agari_hai_list
