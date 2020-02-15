@@ -4,4 +4,4 @@
 .ipynb_checkpoints/
 data/
 notebook/
-*__pycache__
+prepare_data/__pycache__/
