@@ -3,5 +3,5 @@
 .mypy_cache/
 .ipynb_checkpoints/
 data/
-notebook/
 prepare_data/__pycache__/
+notebook/*pkl
