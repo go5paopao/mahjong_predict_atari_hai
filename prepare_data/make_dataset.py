@@ -125,15 +125,15 @@ class MJGame():
         feats["player0_tehai"] = self.tehai_dict[self.riichi_player]
         feats["player0_sutehai"] = self.sutehai_dict[self.riichi_player]
         feats["player0_point"] = self.points[self.riichi_player]
-        feats["player1_tehai"] = self.tehai_dict[(self.riichi_player+1)//4]
-        feats["player1_sutehai"] = self.sutehai_dict[(self.riichi_player+1)//4]
-        feats["player1_point"] = self.points[(self.riichi_player+1)//4]
-        feats["player2_tehai"] = self.tehai_dict[(self.riichi_player+2)//4]
-        feats["player2_sutehai"] = self.sutehai_dict[(self.riichi_player+2)//4]
-        feats["player2_point"] = self.points[(self.riichi_player+2)//4]
-        feats["player3_tehai"] = self.tehai_dict[(self.riichi_player+3)//4]
-        feats["player3_sutehai"] = self.sutehai_dict[(self.riichi_player+3)//4]
-        feats["player3_point"] = self.points[(self.riichi_player+3)//4]
+        feats["player1_tehai"] = self.tehai_dict[(self.riichi_player+1) % 4]
+        feats["player1_sutehai"] = self.sutehai_dict[(self.riichi_player+1) % 4]
+        feats["player1_point"] = self.points[(self.riichi_player+1) % 4]
+        feats["player2_tehai"] = self.tehai_dict[(self.riichi_player+2) % 4]
+        feats["player2_sutehai"] = self.sutehai_dict[(self.riichi_player+2) % 4]
+        feats["player2_point"] = self.points[(self.riichi_player+2) % 4]
+        feats["player3_tehai"] = self.tehai_dict[(self.riichi_player+3) % 4]
+        feats["player3_sutehai"] = self.sutehai_dict[(self.riichi_player+3) % 4]
+        feats["player3_point"] = self.points[(self.riichi_player+3) % 4]
         return feats
 
 
@@ -194,10 +194,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     data_list = []  # type: List[Dict]
-    for mjlog_path in tqdm(list(Path(args.target_dir).glob("*mjlog"))):
+    for mjlog_path in tqdm(list(Path(args.target_dir).glob("*/*mjlog"))):
         try:
             one_game_data = get_mjlog_data(mjlog_path)
-        except xml.etree.ElementTree.ParseError:
+        except:
+            print("error")
             continue
         data_list += one_game_data
     # make dataframe
@@ -207,5 +208,6 @@ if __name__ == "__main__":
     # save
     save_dir = Path(args.save_dir)
     save_dir.mkdir(exist_ok=True)
-    save_path = save_dir / "train.csv"
-    data_df.to_csv(save_path, index=False)
+    # format pickle because of saving list format
+    save_path = save_dir / "train.pkl"
+    data_df.to_pickle(save_path)

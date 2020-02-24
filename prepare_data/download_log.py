@@ -45,12 +45,14 @@ def download_logs(args):
         download_dir.mkdir(exist_ok=True)
         for filepath in html_filepath_list:
             print(f"Download from {filepath}")
-            download_date_dir = download_dir / str(filepath).split(".")[0]
+            download_date_dir = download_dir / str(filepath.name).split(".")[0]
             download_date_dir.mkdir(exist_ok=True)
             # get log urls from html file
             log_urls = get_log_urls_html_log(filepath)
             for log_url in tqdm(log_urls):
                 save_path = str(download_date_dir / log_url.split("?")[1]) + ".mjlog"
+                if Path(save_path).exists():
+                    continue
                 download_one_log(log_url, save_path)
 
 
