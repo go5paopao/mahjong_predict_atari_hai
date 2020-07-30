@@ -125,6 +125,7 @@ def make_feature5(df):
 # add feature
 def make_feature_color(df):
     sutehai_num = df["player0_sutehai"].map(len)
+    # 各種類毎の割合
     df["manzu_ratio"] = df["player0_sutehai"].map(lambda h_list:
         sum([h for h in h_list if h < 10])
     ) / sutehai_num
@@ -137,8 +138,23 @@ def make_feature_color(df):
     df["jihai_ratio"] = df["player0_sutehai"].map(lambda h_list:
         sum([h for h in h_list if h > 30])
     ) / sutehai_num
+    sutehai_num_max6 = df["player0_sutehai"].map(
+        lambda x: len(x) if len(x) < 6 else 6
+    )
+    df["manzu_ratio_first6"] = df["player0_sutehai"].map(lambda h_list:
+        sum([h for h in h_list[:6] if h < 10])
+    ) / sutehai_num_max6
+    df["pinzu_ratio_first6"] = df["player0_sutehai"].map(lambda h_list:
+        sum([h for h in h_list[:6] if h > 10 and h < 20])
+    ) / sutehai_num_max6
+    df["souzu_ratio_first6"] = df["player0_sutehai"].map(lambda h_list:
+        sum([h for h in h_list[:6] if h > 20 and h < 30])
+    ) / sutehai_num_max6
+    df["jihai_ratio_first6"] = df["player0_sutehai"].map(lambda h_list:
+        sum([h for h in h_list[:6] if h > 30])
+    ) / sutehai_num_max6
     # 種類毎に最初に切った牌
-    def func_first_hai(hai_list, hai_type):
+    def func_first_hai(hai_list, hai_type, mode="first"):
         if hai_type == "manzu":
             target_list = [h for h in hai_list if h < 10]
         elif hai_type == "pinzu":
@@ -147,10 +163,29 @@ def make_feature_color(df):
             target_list = [h for h in hai_list if h > 20 and h < 30]
         else:
             target_list = [h for h in hai_list if h > 30]
-        if len(target_list) > 0:
-            return target_list[0]
+        if mode == "first":
+            if len(target_list) > 0:
+                return target_list[0]
+            else:
+                return -1
+        elif mode == "second":
+            if len(target_list) > 1:
+                return target_list[1]
+            else:
+                return -1
+        elif mode == "last":
+            if len(target_list) > 0:
+                return target_list[-1]
+            else:
+                return -1
+        elif mode == "last2":
+            if len(target_list) > 1:
+                return target_list[-2]
+            else:
+                return -1
         else:
             return -1
+
     df["manzu_first_hai"] = df["player0_sutehai"].map(
         lambda h_list: func_first_hai(h_list, "manzu")
     )
@@ -163,7 +198,117 @@ def make_feature_color(df):
     df["jihai_first_hai"] = df["player0_sutehai"].map(
         lambda h_list: func_first_hai(h_list, "jihai")
     )
+    df["manzu_second_hai"] = df["player0_sutehai"].map(
+        lambda h_list: func_first_hai(h_list, "manzu", mode="second")
+    )
+    df["pinzu_second_hai"] = df["player0_sutehai"].map(
+        lambda h_list: func_first_hai(h_list, "pinzu", mode="second")
+    )
+    df["souzu_second_hai"] = df["player0_sutehai"].map(
+        lambda h_list: func_first_hai(h_list, "souzu", mode="second")
+    )
+    df["manzu_diff_first_second"] = np.abs(df["manzu_first_hai"] - df["manzu_second_hai"])
+    df["pinzu_diff_first_second"] = np.abs(df["pinzu_first_hai"] - df["pinzu_second_hai"])
+    df["souzu_diff_first_second"] = np.abs(df["souzu_first_hai"] - df["souzu_second_hai"])
+    # last hai
+    df["manzu_last_hai"] = df["player0_sutehai"].map(
+        lambda h_list: func_first_hai(h_list, "manzu", mode="last")
+    )
+    df["pinzu_last_hai"] = df["player0_sutehai"].map(
+        lambda h_list: func_first_hai(h_list, "pinzu", mode="last")
+    )
+    df["souzu_last_hai"] = df["player0_sutehai"].map(
+        lambda h_list: func_first_hai(h_list, "souzu", mode="last")
+    )
+    df["manzu_last2_hai"] = df["player0_sutehai"].map(
+        lambda h_list: func_first_hai(h_list, "manzu", mode="last2")
+    )
+    df["pinzu_last2_hai"] = df["player0_sutehai"].map(
+        lambda h_list: func_first_hai(h_list, "pinzu", mode="last2")
+    )
+    df["souzu_last2_hai"] = df["player0_sutehai"].map(
+        lambda h_list: func_first_hai(h_list, "souzu", mode="last2")
+    )
+    df["manzu_diff_last_last2"] = np.abs(df["manzu_last_hai"] - df["manzu_last2_hai"])
+    df["pinzu_diff_last_last2"] = np.abs(df["pinzu_last_hai"] - df["pinzu_last2_hai"])
+    df["souzu_diff_last_last2"] = np.abs(df["souzu_last_hai"] - df["souzu_last2_hai"])
     return df
+
+
+# add feature
+def make_feature_suji(df):
+    # 各スジを切ったか
+    origin_cols = df.columns.tolist()
+    for hai1, hai2 in [(1, 4), (2, 5), (3, 6), (4, 7), (5, 8), (6, 9)]:
+        df[f"manzu_suji{hai1}{hai2}"] = df["player0_sutehai"].map(lambda h_list:
+            1 if hai1 in h_list or hai2 in h_list else 0
+        ).astype(np.int8)
+        df[f"pinzu_suji{hai1}{hai2}"] = df["player0_sutehai"].map(lambda h_list:
+            1 if hai1+10 in h_list or hai2+10 in h_list else 0
+        ).astype(np.int8)
+        df[f"souzu_suji{hai1}{hai2}"] = df["player0_sutehai"].map(lambda h_list:
+            1 if hai1+20 in h_list or hai2+20 in h_list else 0
+        ).astype(np.int8)
+    new_cols = [c for c in df.columns if c not in set(origin_cols)]
+    df["sute_suji_num"] = df[new_cols].sum(axis=1)
+    return df
+
+
+# add feature
+def make_feature_hai_order_encoding(df):
+    # 種類毎にfirst3 or last3で切った牌を数値化
+    def func_order_encode(hai_list, hai_type, mode="first"):
+        if hai_type == "manzu":
+            target_list = [h%10 for h in hai_list if h < 10]
+        elif hai_type == "pinzu":
+            target_list = [h%10 for h in hai_list if h > 10 and h < 20]
+        elif hai_type == "souzu":
+            target_list = [h%10 for h in hai_list if h > 20 and h < 30]
+        else:
+            target_list = [h%10 for h in hai_list if h > 30]
+        if mode == "first":
+            encoded_value = 0
+            if len(target_list) > 0:
+                encoded_value += target_list[0] * 100
+            if len(target_list) > 1:
+                encoded_value += target_list[1] * 10
+            if len(target_list) > 2:
+                encoded_value += target_list[2]
+            else:
+                return -1
+        elif mode == "last":
+            encoded_value = 0
+            if len(target_list) > 0:
+                encoded_value += target_list[-1] * 100
+            if len(target_list) > 1:
+                encoded_value += target_list[-2] * 10
+            if len(target_list) > 2:
+                encoded_value += target_list[-3]
+            else:
+                return -1
+        else:
+            return -1
+
+    df["manzu_first3_hai_order_encode"] = df["player0_sutehai"].map(
+        lambda h_list: func_order_encode(h_list, "manzu", mode="first")
+    )
+    df["pinzu_first3_hai_order_encode"] = df["player0_sutehai"].map(
+        lambda h_list: func_order_encode(h_list, "pinzu", mode="first")
+    )
+    df["souzu_first3_hai_order_encode"] = df["player0_sutehai"].map(
+        lambda h_list: func_order_encode(h_list, "souzu", mode="first")
+    )
+    df["manzu_last3_hai_order_encode"] = df["player0_sutehai"].map(
+        lambda h_list: func_order_encode(h_list, "manzu", mode="last")
+    )
+    df["pinzu_last3_hai_order_encode"] = df["player0_sutehai"].map(
+        lambda h_list: func_order_encode(h_list, "pinzu", mode="last")
+    )
+    df["souzu_last3_hai_order_encode"] = df["player0_sutehai"].map(
+        lambda h_list: func_order_encode(h_list, "souzu", mode="last")
+    )
+    return df
+
 
 
 def make_ohe_target(y_srs):
@@ -187,13 +332,14 @@ def lgb_train(df, ohe_targets):
         "player3_sutehai",
     ]
     use_feats = [c for c in df.columns if c not in except_feats]
+    print(f"Feature Num : {len(use_feats)}")
     
     lgb_params = {
             'objective':'binary',
             "metric":"binary_logloss",
             "verbosity": -1,
             "boosting": "gbdt",
-            'learning_rate': 0.1,
+            'learning_rate': 0.05,
             'num_leaves': 32,
             'min_data_in_leaf': 30, 
             'max_depth': 4,
@@ -279,6 +425,13 @@ def train_run():
         df = make_feature4(df)
         print("make feature5")
         df = make_feature5(df)
+        # add feature
+        print("make color feature")
+        df = make_feature_color(df)
+        print("make suji feature")
+        df = make_feature_suji(df)
+        print("make feature_hai_order_encoding")
+        df = make_feature_hai_order_encoding(df)
         # select only agaqri-hai exists
         df = df[df.agari_hai.map(len) > 0].reset_index(drop=True)
         # make one-hot target
@@ -307,5 +460,5 @@ def train_run():
 
 
 if __name__ == "__main__":
-    DEBUG = True
+    DEBUG = False
     train_run()
