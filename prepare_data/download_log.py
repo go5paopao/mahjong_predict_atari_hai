@@ -59,8 +59,9 @@ def download_logs(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "target_dir",
+        "-t", "--target_dir",
         type=str,
+        required=True,
         help="filepath of html log dir to download mj logs"
     )
     parser.add_argument(

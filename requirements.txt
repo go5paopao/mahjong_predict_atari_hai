@@ -1,0 +1,30 @@
+requests
+tqdm
+numba
+autopep8
+pillow
+# ml library
+numpy
+scipy
+pandas
+scikit-learn
+optuna
+# mlflow
+# jupyter
+jupyter_contrib_nbextensions
+# jupyterlab
+jupyterthemes
+# ml model
+# xgboost
+# catboost
+lightgbm
+# visualize
+matplotlib
+seaborn
+japanize-matplotlib
+# pytorch
+# torch
+# torchvision
+# transformers
+shap
+lime
