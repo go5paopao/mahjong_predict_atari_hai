@@ -122,6 +122,50 @@ def make_feature5(df):
     return df
 
 
+# add feature
+def make_feature_color(df):
+    sutehai_num = df["player0_sutehai"].map(len)
+    df["manzu_ratio"] = df["player0_sutehai"].map(lambda h_list:
+        sum([h for h in h_list if h < 10])
+    ) / sutehai_num
+    df["pinzu_ratio"] = df["player0_sutehai"].map(lambda h_list:
+        sum([h for h in h_list if h > 10 and h < 20])
+    ) / sutehai_num
+    df["souzu_ratio"] = df["player0_sutehai"].map(lambda h_list:
+        sum([h for h in h_list if h > 20 and h < 30])
+    ) / sutehai_num
+    df["jihai_ratio"] = df["player0_sutehai"].map(lambda h_list:
+        sum([h for h in h_list if h > 30])
+    ) / sutehai_num
+    # 種類毎に最初に切った牌
+    def func_first_hai(hai_list, hai_type):
+        if hai_type == "manzu":
+            target_list = [h for h in hai_list if h < 10]
+        elif hai_type == "pinzu":
+            target_list = [h for h in hai_list if h > 10 and h < 20]
+        elif hai_type == "souzu":
+            target_list = [h for h in hai_list if h > 20 and h < 30]
+        else:
+            target_list = [h for h in hai_list if h > 30]
+        if len(target_list) > 0:
+            return target_list[0]
+        else:
+            return -1
+    df["manzu_first_hai"] = df["player0_sutehai"].map(
+        lambda h_list: func_first_hai(h_list, "manzu")
+    )
+    df["pinzu_first_hai"] = df["player0_sutehai"].map(
+        lambda h_list: func_first_hai(h_list, "pinzu")
+    )
+    df["souzu_first_hai"] = df["player0_sutehai"].map(
+        lambda h_list: func_first_hai(h_list, "souzu")
+    )
+    df["jihai_first_hai"] = df["player0_sutehai"].map(
+        lambda h_list: func_first_hai(h_list, "jihai")
+    )
+    return df
+
+
 def make_ohe_target(y_srs):
     y_ohe = y_srs.apply(lambda x: pd.Series(np.eye(40)[x].sum(axis=0)))
     use_col = [c for c in range(40) if c < 38 and c%10 != 0]
@@ -218,6 +262,8 @@ def train_run():
     if not exists_train_data():
         print("load data")
         df = pd.read_pickle("../data/train_data/train.pkl")
+        if DEBUG:
+            df = df.sample(1000).reset_index(drop=True)
         print("dora map")
         df["dora"] = df["dora"].map(lambda h_list: [func_33_to_40(h//4) for h in h_list])
         # メモリ削減のためplayer1以外の手牌のカラムは消す
@@ -261,4 +307,5 @@ def train_run():
 
 
 if __name__ == "__main__":
+    DEBUG = True
     train_run()
