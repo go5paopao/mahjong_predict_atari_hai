@@ -1,18 +1,10 @@
-# Predicting Mahjong atari-hai by transformer (Transformerを用いた麻雀捨て牌予測)
+# Predicting Mahjong atari-hai
 
-## Data Preparation
+## Overview
 
-### 1.Download and unzip Tenho html-log data
-
-The data is download from [https://tenhou.net/sc/raw/]
-Please read the policy of the site yourself.
-
-There are only download links in this file, so this file is light.
-
-After download, please unzip the file to "./data/log_html";
-
-### 2.
-
+- In this repository, we make a model which predict atari-hai of other'reach player.
+- Also we can show the model prediction and shap values in notebook.
+- Currently I made lightgbm model, and I have a plan build other models.
 
 ## Reference and Use Data
 
